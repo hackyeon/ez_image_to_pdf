@@ -1,3 +1,6 @@
+# Kotlin compiler session
+/android/.kotlin/
+
 # Misc
 *.class
 *.log
