@@ -235,11 +235,16 @@ class _EmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            '''
+      return SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 20,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: const Text(
+              '''
 이미지를 빠르게 PDF로 변환하세요.
 설치 없이 브라우저에서 바로 사용 가능합니다.
 
@@ -254,7 +259,12 @@ skek93358@gmail.com
 업로드된 이미지는 서버에 저장되지 않습니다.
 모든 변환은 브라우저 내에서 처리됩니다.
 ''',
-            textAlign: TextAlign.center,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                height: 1.5,
+                fontSize: 15,
+              ),
+            ),
           ),
         ),
       );
