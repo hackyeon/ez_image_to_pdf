@@ -1,11 +1,14 @@
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:printing/printing.dart';
 
 import '../../core/pdf/pdf_generator.dart';
 import 'models/selected_image.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class ImageToPdfViewModel extends ChangeNotifier {
   final ImagePicker _imagePicker = ImagePicker();
@@ -21,17 +24,46 @@ class ImageToPdfViewModel extends ChangeNotifier {
 
   bool get canCreatePdf => _images.isNotEmpty && !_isLoading;
 
-  Future<void> pickImages() async {
+  double _progress = 0.0;
+  double get progress => _progress;
+  int get progressPercent => (_progress * 100).toInt();
+
+  Future<void> pickImages(BuildContext context) async {
+    if (kIsWeb) {
+      await _pickImagesForWeb();
+    } else {
+      await _pickImagesForApp(context);
+    }
+  }
+
+  Future<void> _pickImagesForWeb() async {
     final pickedFiles = await _imagePicker.pickMultiImage();
 
     if (pickedFiles.isEmpty) return;
 
-    for (final file in pickedFiles) {
+    await addImagesFromFiles(pickedFiles);
+  }
+
+  Future<void> _pickImagesForApp(BuildContext context) async {
+    final result = await AssetPicker.pickAssets(
+      context,
+      pickerConfig: const AssetPickerConfig(
+        maxAssets: 100,
+        requestType: RequestType.image,
+      ),
+    );
+
+    if (result == null || result.isEmpty) return;
+
+    for (final asset in result) {
+      final file = await asset.file;
+      if (file == null) continue;
+
       final bytes = await file.readAsBytes();
 
       _images.add(
         SelectedImage(
-          name: file.name,
+          name: asset.title ?? 'image',
           bytes: bytes,
         ),
       );
@@ -44,17 +76,29 @@ class ImageToPdfViewModel extends ChangeNotifier {
     if (files.isEmpty) return;
 
     for (final file in files) {
-      final bytes = await file.readAsBytes();
+      final originalBytes = await file.readAsBytes();
+      final compressedBytes = await compressImage(originalBytes);
 
       _images.add(
         SelectedImage(
           name: file.name,
-          bytes: bytes,
+          bytes: compressedBytes,
         ),
       );
     }
 
     notifyListeners();
+  }
+
+  Future<Uint8List> compressImage(Uint8List bytes) async {
+    final result = await FlutterImageCompress.compressWithList(
+      bytes,
+      minWidth: 1600,
+      minHeight: 1600,
+      quality: 80,
+    );
+
+    return Uint8List.fromList(result);
   }
 
   void removeImage(int index) {
@@ -84,13 +128,20 @@ class ImageToPdfViewModel extends ChangeNotifier {
     if (_images.isEmpty || _isLoading) return;
 
     _isLoading = true;
+    _progress = 0.0;
     notifyListeners();
 
-    try {
-      final imageBytesList = _images.map((image) => image.bytes).toList();
+    await Future.delayed(const Duration(milliseconds: 100));
 
-      final Uint8List pdfBytes = await _pdfGenerator.createFromImages(
-        imageBytesList,
+    Uint8List? pdfBytes;
+
+    try {
+      pdfBytes = await _pdfGenerator.createFromImages(
+        _images.map((image) => image.bytes).toList(),
+        onProgress: (current, total) {
+          _progress = current / total;
+          notifyListeners();
+        },
       );
 
       await Printing.sharePdf(
@@ -98,7 +149,10 @@ class ImageToPdfViewModel extends ChangeNotifier {
         filename: 'ez_image_to_pdf.pdf',
       );
     } finally {
+      pdfBytes = null;
+
       _isLoading = false;
+      _progress = 0.0;
       notifyListeners();
     }
   }

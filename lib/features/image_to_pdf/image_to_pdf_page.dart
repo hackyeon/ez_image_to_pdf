@@ -44,55 +44,86 @@ class _ImageToPdfPageState extends State<ImageToPdfPage> {
             ],
           ),
           body: SafeArea(
-            child: Column(
+            child: Stack(
               children: [
-                _UploadArea(
-                  onTap: viewModel.pickImages,
-                  onDropFiles: viewModel.addImagesFromFiles,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Text(
-                        '선택된 이미지 ${viewModel.images.length}장',
-                        style: Theme.of(context).textTheme.titleMedium,
+                Column(
+                  children: [
+                    _UploadArea(
+                      onTap: () => viewModel.pickImages(context),
+                      onDropFiles: viewModel.addImagesFromFiles,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          Text(
+                            '선택된 이미지 ${viewModel.images.length}장',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: viewModel.images.isEmpty
-                      ? const _EmptyView()
-                      : _ImageList(
-                    viewModel: viewModel,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: FilledButton.icon(
-                      onPressed: viewModel.canCreatePdf
-                          ? viewModel.createPdf
-                          : null,
-                      icon: viewModel.isLoading
-                          ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: viewModel.images.isEmpty
+                          ? const _EmptyView()
+                          : _ImageList(
+                        viewModel: viewModel,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: FilledButton.icon(
+                          onPressed: viewModel.canCreatePdf
+                              ? viewModel.createPdf
+                              : null,
+                          icon: const Icon(Icons.picture_as_pdf),
+                          label: const Text('PDF 생성하기'),
                         ),
-                      )
-                          : const Icon(Icons.picture_as_pdf),
-                      label: Text(
-                        viewModel.isLoading ? 'PDF 생성 중...' : 'PDF 생성하기',
+                      ),
+                    ),
+                  ],
+                ),
+
+                if (viewModel.isLoading)
+                  Positioned.fill(
+                    child: AbsorbPointer(
+                      absorbing: true,
+                      child: Container(
+                        color: Colors.black.withOpacity(0.35),
+                        child: Center(
+                          child: Container(
+                            width: 180,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(
+                                  value: viewModel.progress == 0
+                                      ? null
+                                      : viewModel.progress,
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  '${viewModel.progressPercent}%',
+                                  style: Theme.of(context).textTheme.headlineSmall,
+                                ),
+                                const SizedBox(height: 8),
+                                const Text('PDF 생성 중...'),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -181,7 +212,7 @@ class _UploadAreaState extends State<_UploadArea> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  isDragging ? '여기에 이미지를 놓으세요' : '이미지를 선택하거나 드래그하세요',
+                  isDragging ? '여기에 이미지를 놓으세요' : kIsWeb ? '이미지를 선택하거나 드래그하세요' : '이미지를 선택하세요',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

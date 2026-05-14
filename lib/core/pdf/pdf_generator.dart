@@ -6,11 +6,14 @@ import 'package:pdf/widgets.dart' as pw;
 class PdfGenerator {
   const PdfGenerator();
 
-  Future<Uint8List> createFromImages(List<Uint8List> images) async {
+  Future<Uint8List> createFromImages(
+      List<Uint8List> images, {
+        void Function(int current, int total)? onProgress,
+      }) async {
     final document = pw.Document();
 
-    for (final imageBytes in images) {
-      final image = pw.MemoryImage(imageBytes);
+    for (int i = 0; i < images.length; i++) {
+      final image = pw.MemoryImage(images[i]);
 
       document.addPage(
         pw.Page(
@@ -26,6 +29,10 @@ class PdfGenerator {
           },
         ),
       );
+
+      onProgress?.call(i + 1, images.length);
+
+      await Future<void>.delayed(Duration.zero);
     }
 
     return document.save();
