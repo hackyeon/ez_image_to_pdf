@@ -1,6 +1,6 @@
 {
-    "name": "ez_image_to_pdf",
-    "short_name": "ez_image_to_pdf",
+    "name": "EZ PDF",
+    "short_name": "EZ PDF",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

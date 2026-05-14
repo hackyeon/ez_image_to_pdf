@@ -8,10 +8,10 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'EZ Image to PDF',
+      title: 'EZ PDF',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: Colors.red,
+        colorSchemeSeed: Colors.deepOrange,
         useMaterial3: true,
       ),
       home: const ImageToPdfPage(),
