@@ -7,7 +7,6 @@ import 'package:printing/printing.dart';
 
 import '../../core/pdf/pdf_generator.dart';
 import 'models/selected_image.dart';
-import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class ImageToPdfViewModel extends ChangeNotifier {
@@ -29,47 +28,11 @@ class ImageToPdfViewModel extends ChangeNotifier {
   int get progressPercent => (_progress * 100).toInt();
 
   Future<void> pickImages(BuildContext context) async {
-    if (kIsWeb) {
-      await _pickImagesForWeb();
-    } else {
-      await _pickImagesForApp(context);
-    }
-  }
-
-  Future<void> _pickImagesForWeb() async {
     final pickedFiles = await _imagePicker.pickMultiImage();
 
     if (pickedFiles.isEmpty) return;
 
     await addImagesFromFiles(pickedFiles);
-  }
-
-  Future<void> _pickImagesForApp(BuildContext context) async {
-    final result = await AssetPicker.pickAssets(
-      context,
-      pickerConfig: const AssetPickerConfig(
-        maxAssets: 100,
-        requestType: RequestType.image,
-      ),
-    );
-
-    if (result == null || result.isEmpty) return;
-
-    for (final asset in result) {
-      final file = await asset.file;
-      if (file == null) continue;
-
-      final bytes = await file.readAsBytes();
-
-      _images.add(
-        SelectedImage(
-          name: asset.title ?? 'image',
-          bytes: bytes,
-        ),
-      );
-    }
-
-    notifyListeners();
   }
 
   Future<void> addImagesFromFiles(List<XFile> files) async {
