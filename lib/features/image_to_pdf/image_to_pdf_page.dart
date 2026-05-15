@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../core/ads/banner_ad_widget.dart';
 import 'image_to_pdf_view_model.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ImageToPdfPage extends StatefulWidget {
   const ImageToPdfPage({super.key});
@@ -34,7 +36,7 @@ class _ImageToPdfPageState extends State<ImageToPdfPage> {
       builder: (context, _) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('EZ Image to PDF'),
+            title: const Text('EZ PDF'),
             actions: [
               if (viewModel.images.isNotEmpty)
                 IconButton(
@@ -71,8 +73,13 @@ class _ImageToPdfPageState extends State<ImageToPdfPage> {
                         viewModel: viewModel,
                       ),
                     ),
+                    if (!kIsWeb)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: BannerAdWidget(),
+                      ),
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                       child: SizedBox(
                         width: double.infinity,
                         height: 56,
@@ -85,6 +92,19 @@ class _ImageToPdfPageState extends State<ImageToPdfPage> {
                         ),
                       ),
                     ),
+                    if(!kIsWeb)
+                      TextButton(
+                        onPressed: () async {
+                          final uri = Uri.parse(
+                            'https://skek933.cafe24.com/privacy/ezpdf.html',
+                          );
+                          await launchUrl(
+                            uri,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        },
+                        child: const Text('개인정보 처리방침'),
+                      ),
                   ],
                 ),
 
