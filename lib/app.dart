@@ -11,7 +11,7 @@ class App extends StatelessWidget {
       title: 'EZ PDF',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: Colors.deepOrange,
+        colorSchemeSeed: Colors.blue,
         useMaterial3: true,
       ),
       home: const ImageToPdfPage(),
