@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.hack.ezimagetopdf.ez_image_to_pdf"
+    namespace = "com.hack.ezpdf"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
